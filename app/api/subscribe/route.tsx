@@ -1,124 +1,151 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    console.log("[v0] Subscribe API called")
+    console.log("[v0] RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY)
+
     const { email, password } = await request.json()
+    console.log("[v0] Subscribe data:", { email, hasPassword: !!password })
 
-    // Validate input
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
-    }
+    // Send notification to admin
+    console.log("[v0] Sending admin notification email...")
+    const adminEmail = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: "economicsjusticeforums@gmail.com",
+      subject: "New Subscription to Economic Justice Forum",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #1a5276 0%, #16a085 50%, #27ae60 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>New Member Subscription</h1>
+              </div>
+              <div class="content">
+                <p><strong>New subscriber email:</strong></p>
+                <p style="padding: 15px; background: white; border-radius: 5px; font-size: 18px;">${email}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+    console.log("[v0] Admin email result:", adminEmail)
 
-    // Send welcome email to new subscriber
+    // Send welcome email to subscriber
+    console.log("[v0] Sending welcome email...")
     const welcomeEmail = await resend.emails.send({
-      from: "Economic Justice Forum <onboarding@resend.dev>",
+      from: "onboarding@resend.dev",
       to: email,
       subject: "Welcome to Economic Justice Forum!",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #1a5276 0%, #27ae60 100%); padding: 40px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 32px;">Welcome to EJF!</h1>
-            <p style="color: white; margin: 15px 0 0 0; font-size: 18px;">Building a Fair Future Together</p>
-          </div>
-          
-          <div style="padding: 40px; background: #f9f9f9;">
-            <h2 style="color: #2c3e50; margin-top: 0;">Thank You for Joining Us!</h2>
-            
-            <p style="color: #555; line-height: 1.8; font-size: 16px;">
-              We're thrilled to have you as part of the Economic Justice Forum community. Together, we're working towards a fairer, more equitable Kenya.
-            </p>
-            
-            <div style="background: white; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #27ae60;">
-              <h3 style="color: #2c3e50; margin-top: 0;">What's Next?</h3>
-              <ul style="color: #555; line-height: 1.8; padding-left: 20px;">
-                <li>Stay updated on our latest campaigns and initiatives</li>
-                <li>Receive invitations to exclusive events and workshops</li>
-                <li>Connect with like-minded advocates for economic justice</li>
-                <li>Access resources and reports on economic policy</li>
-              </ul>
-            </div>
-            
-            <div style="background: linear-gradient(135deg, #1a5276 0%, #27ae60 100%); padding: 25px; border-radius: 8px; margin: 25px 0;">
-              <h3 style="color: white; margin-top: 0;">Our Core Pillars</h3>
-              <div style="color: white; line-height: 1.8;">
-                <p style="margin: 10px 0;">✓ Governance & Accountability</p>
-                <p style="margin: 10px 0;">✓ Natural Resources Management</p>
-                <p style="margin: 10px 0;">✓ Debt & Tax Justice</p>
-                <p style="margin: 10px 0;">✓ Land Rights & Climate Justice</p>
-                <p style="margin: 10px 0;">✓ Youth & Women Empowerment</p>
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #1a5276 0%, #16a085 50%, #27ae60 100%); color: white; padding: 40px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; }
+              .pillar { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #16a085; border-radius: 5px; }
+              .footer { background: #1a5276; color: white; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Welcome to Economic Justice Forum!</h1>
+                <p style="font-size: 18px; margin-top: 10px;">Building a Fair Future Together</p>
+              </div>
+              <div class="content">
+                <p>Thank you for joining the Economic Justice Forum community!</p>
+                <p>We are dedicated to promoting economic justice and equity across Africa. As a member, you'll receive updates on our initiatives, events, and opportunities to get involved.</p>
+                
+                <h2 style="color: #1a5276; margin-top: 30px;">Our Core Pillars:</h2>
+                
+                <div class="pillar">
+                  <strong>Governance & Accountability</strong>
+                  <p>Promoting transparent and accountable governance systems.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Natural Resources</strong>
+                  <p>Ensuring fair management and distribution of natural resources.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Debt Justice</strong>
+                  <p>Advocating for fair debt policies and financial sustainability.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Tax Justice</strong>
+                  <p>Fighting for equitable tax systems and policies.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Land Rights</strong>
+                  <p>Protecting community land rights and promoting fair land policies.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Climate Justice</strong>
+                  <p>Addressing climate change impacts on vulnerable communities.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Youth & Women Empowerment</strong>
+                  <p>Creating opportunities for youth and women in economic development.</p>
+                </div>
+                
+                <div class="pillar">
+                  <strong>Democracy & Human Rights</strong>
+                  <p>Upholding democratic values and protecting human rights.</p>
+                </div>
+                
+                <p style="margin-top: 30px;">Stay tuned for upcoming events, workshops, and ways to contribute to our mission!</p>
+                
+                <p>Together, we can build a more just and equitable future.</p>
+              </div>
+              <div class="footer">
+                <p><strong>Economic Justice Forum</strong></p>
+                <p>Building a Fair Future</p>
               </div>
             </div>
-            
-            <p style="color: #555; line-height: 1.8; font-size: 16px;">
-              We'll keep you informed about upcoming events, policy updates, and opportunities to get involved in our advocacy work.
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://economicjusticeforum.org" style="background: linear-gradient(135deg, #1a5276 0%, #27ae60 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-size: 16px; font-weight: bold;">
-                Explore Our Work
-              </a>
-            </div>
-          </div>
-          
-          <div style="background: #2c3e50; padding: 25px; text-align: center; color: white;">
-            <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold;">Stay Connected</p>
-            <p style="margin: 0 0 15px 0; font-size: 14px;">
-              Email: cmwambingu@gmail.com | Phone: +254 728 355 531
-            </p>
-            <p style="margin: 0; font-size: 12px; color: #ccc;">
-              Economic Justice Forum - Building a Fair Future
-            </p>
-          </div>
-        </div>
+          </body>
+        </html>
       `,
     })
+    console.log("[v0] Welcome email result:", welcomeEmail)
 
-    // Notify admin about new subscriber
-    const adminNotification = await resend.emails.send({
-      from: "EJF Subscriptions <onboarding@resend.dev>",
-      to: "cmwambingu@gmail.com",
-      subject: "New EJF Member Subscription",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #1a5276 0%, #27ae60 100%); padding: 30px; text-align: center;">
-            <h1 style="color: white; margin: 0;">New Member Alert</h1>
-            <p style="color: white; margin: 10px 0 0 0;">Economic Justice Forum</p>
-          </div>
-          
-          <div style="padding: 30px; background: #f9f9f9;">
-            <h2 style="color: #2c3e50; margin-top: 0;">New Subscription</h2>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px;">
-              <p style="margin: 0;"><strong>Email:</strong> ${email}</p>
-              <p style="margin: 10px 0 0 0;"><strong>Date:</strong> ${new Date().toLocaleString("en-US", {
-                timeZone: "Africa/Nairobi",
-                dateStyle: "full",
-                timeStyle: "short",
-              })}</p>
-            </div>
-          </div>
-          
-          <div style="background: #2c3e50; padding: 20px; text-align: center; color: white;">
-            <p style="margin: 0; font-size: 14px;">Economic Justice Forum - Building a Fair Future</p>
-          </div>
-        </div>
-      `,
+    return NextResponse.json({
+      success: true,
+      message: "Subscription successful",
+      adminEmailId: adminEmail.data?.id,
+      welcomeEmailId: welcomeEmail.data?.id,
     })
-
+  } catch (error: any) {
+    console.error("[v0] Subscription error:", error)
+    console.error("[v0] Error details:", error.message, error.statusCode)
     return NextResponse.json(
       {
-        success: true,
-        message: "Subscription successful",
-        welcomeEmailId: welcomeEmail.data?.id,
-        adminEmailId: adminNotification.data?.id,
+        success: false,
+        error: "Failed to process subscription",
+        details: error.message,
       },
-      { status: 200 },
+      { status: 500 },
     )
-  } catch (error) {
-    console.error("[v0] Subscription error:", error)
-    return NextResponse.json({ error: "Failed to process subscription" }, { status: 500 })
   }
 }

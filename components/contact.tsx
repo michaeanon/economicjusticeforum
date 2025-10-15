@@ -23,6 +23,8 @@ export default function Contact() {
 
     setIsLoading(true)
 
+    console.log("[v0] Submitting contact form...")
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
@@ -33,19 +35,21 @@ export default function Contact() {
       })
 
       const data = await response.json()
+      console.log("[v0] Contact form response:", data)
 
       if (response.ok) {
+        console.log("[v0] Contact form submitted successfully!")
         setIsSuccess(true)
         setName("")
         setEmail("")
         setMessage("")
 
-        // Reset success message after 5 seconds
         setTimeout(() => {
           setIsSuccess(false)
         }, 5000)
       } else {
-        alert(`Error: ${data.error || "Failed to send message"}`)
+        console.error("[v0] Contact form error response:", data)
+        alert(`Error: ${data.details || data.error || "Failed to send message"}`)
       }
     } catch (error) {
       console.error("[v0] Contact form submission error:", error)
